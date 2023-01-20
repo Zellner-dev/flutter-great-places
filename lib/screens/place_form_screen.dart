@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:great_places/providers/grate_places.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:great_places/providers/great_places.dart';
 import 'package:great_places/widgets/image_input.dart';
 import 'package:great_places/widgets/location_input.dart';
 import 'package:provider/provider.dart';
@@ -17,16 +18,26 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
 
   final _titleController = TextEditingController();
   File? _pickedImage;
+  LatLng? _pickedPosition;
 
   void _onSelectImage(File pickedImage) {
     _pickedImage = pickedImage;
   }
 
+  void _onSelectPosition(LatLng position) {
+    _pickedPosition = position;
+  }
+
+  bool _isValidForm() {
+    return _titleController.text != "" &&
+        _pickedImage != null &&
+        _pickedPosition != null;
+  }
+
   void _submitForm() {
-    if(_titleController.text.isEmpty || _pickedImage == null) {
-      return;
-    }
-    Provider.of<GratePlaces>(context, listen: false).addPlace(_titleController.text, _pickedImage!);
+    if(!_isValidForm()) return;
+    
+    Provider.of<GratePlaces>(context, listen: false).addPlace(_titleController.text, _pickedImage!, _pickedPosition!);
 
     Navigator.of(context).pop();
   }
@@ -52,11 +63,14 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
                         decoration: const InputDecoration(
                           labelText: "Título"
                         ),
+                        onChanged: (_) {
+                          setState(() {});
+                        },
                       ),
                       const SizedBox(height: 10),
                       ImageInput(onSelectImage: _onSelectImage),
                       const SizedBox(height: 10),
-                      const LocationInput()
+                      LocationInput(onSelectPosition: _onSelectPosition)
                     ],
                   ),
                 ),
@@ -68,12 +82,13 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
               color: Theme.of(context).colorScheme.primary,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
+                  disabledBackgroundColor: Colors.grey,
                   elevation: 0,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 icon: const Icon(Icons.add_rounded),
                 label: const Text("Adicionar"),
-                onPressed: _submitForm, 
+                onPressed: _isValidForm() ? _submitForm : null, 
               ),
             ),
           ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:great_places/providers/grate_places.dart';
+import 'package:great_places/providers/great_places.dart';
 import 'package:great_places/utils/app_routes.dart';
 import 'package:provider/provider.dart';
 
@@ -43,9 +43,8 @@ class PlacesListScreen extends StatelessWidget {
                           ),
                         ),
                         title: Text(item.title),
-                        onTap: () {
-                          
-                        },
+                        subtitle: Text(item.location!.adress!),
+                        onTap: () => Navigator.of(context).pushNamed(AppRoutes.PLACE_DETAIL, arguments: item)
                       );
                     }),
                   );

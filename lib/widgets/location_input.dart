@@ -1,10 +1,13 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:great_places/screens/map_screen.dart';
+import 'package:great_places/utils/location_util.dart';
+import 'package:location/location.dart';
 
 class LocationInput extends StatefulWidget {
-  const LocationInput({super.key});
+  const LocationInput({super.key, required this.onSelectPosition});
+
+  final Function(LatLng pickedPosition) onSelectPosition;
 
   @override
   State<LocationInput> createState() => _LocationInputState();
@@ -13,6 +16,47 @@ class LocationInput extends StatefulWidget {
 class _LocationInputState extends State<LocationInput> {
 
   String? _previewImageUrl;
+
+  void _showPreview(double lat, double long) {
+
+    final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
+      latitude: lat, 
+      longitude: long
+    );
+
+    setState(() {
+      _previewImageUrl = staticMapImageUrl;
+    });
+  }
+
+  Future<void> _getCurrentUserLocation() async {
+    try{
+      final locData = await Location().getLocation();
+
+      widget.onSelectPosition(LatLng(
+        locData.latitude!,
+        locData.longitude!
+      ));
+      _showPreview(locData.latitude!, locData.longitude!);
+    } catch (_) {
+      return;
+    }
+
+  }
+
+  Future<void> _selectOnMap() async {
+    final selectedPosition = await Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (ctx) => const MapScreen()
+      )
+    );
+
+    if(selectedPosition == null) return;
+
+    widget.onSelectPosition(selectedPosition);
+    _showPreview(selectedPosition.latitude, selectedPosition.longitude);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +89,7 @@ class _LocationInputState extends State<LocationInput> {
                 "Localização Atual",
                 textScaleFactor: 0.85,
               ),
-              onPressed: () {
-
-              }, 
+              onPressed: _getCurrentUserLocation 
             ),
             TextButton.icon(
               icon: const Icon(Icons.map_rounded),
@@ -55,9 +97,7 @@ class _LocationInputState extends State<LocationInput> {
                 "Selecione no Mapa",
                 textScaleFactor: 0.85,
               ),
-              onPressed: () {
-
-              }, 
+              onPressed: _selectOnMap, 
             )
           ],
         )

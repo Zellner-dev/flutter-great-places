@@ -12,7 +12,10 @@ class DbUtil {
             CREATE TABLE places(
               id TEXT PRIMARY KEY,
               title TEXT,
-              image TEXT
+              image TEXT,
+              lat TEXT,
+              long TEXT,
+              adress TEXT
             )
           """
           );
